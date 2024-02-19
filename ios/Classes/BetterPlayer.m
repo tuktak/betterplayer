@@ -808,9 +808,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     [self disablePictureInPicture];
     [self setPictureInPicture:false];
     _disposed = true;
-    _player = nil;
-    self._playerLayer = nil;
-
 }
 
 @end
