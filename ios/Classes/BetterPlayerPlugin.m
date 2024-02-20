@@ -68,6 +68,7 @@ bool _remoteCommandsInitialized = false;
 
 #pragma mark - BetterPlayerPlugin class
 - (int)newTextureId {
+//    return 1;
     texturesCount += 1;
     return texturesCount;
 }
@@ -278,8 +279,6 @@ bool _remoteCommandsInitialized = false;
 
 
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
-
-
     if ([@"init" isEqualToString:call.method]) {
         // Allow audio playback when the Ring/Silent switch is set to silent
         for (NSNumber* textureId in _players) {
@@ -293,8 +292,27 @@ bool _remoteCommandsInitialized = false;
         [self onPlayerSetup:player result:result];
     } else {
         NSDictionary* argsMap = call.arguments;
-        int64_t textureId = ((NSNumber*)argsMap[@"textureId"]).unsignedIntegerValue;
-        BetterPlayer* player = _players[@(textureId)];
+        id textureIdValue = argsMap[@"textureId"];
+        int64_t textureId;
+        BetterPlayer *player;
+        if (![textureIdValue isKindOfClass:[NSNull class]]) {
+            textureId = [textureIdValue unsignedIntegerValue];
+            player = _players[@(textureId)];
+            // Continue with the rest of your code
+        } else {
+            // Handle the case when textureId is NSNull
+            NSLog(@"Error: TextureId is NSNull");
+            NSLog(@"method: %@", call.method);
+            NSString *key;
+            for (key in argsMap) {
+                NSLog(@"key: %@, value: %@", key, [argsMap valueForKey:key]);
+            }
+            // You might want to return an error or take appropriate action here
+            return result(nil);
+
+        }
+//        int64_t textureId = ((NSNumber*)argsMap[@"textureId"]).unsignedIntegerValue;
+//        BetterPlayer* player = _players[@(textureId)];
         if ([@"setDataSource" isEqualToString:call.method]) {
             [player clear];
             // This call will clear cached frame because we will return transparent frame
