@@ -9,6 +9,7 @@ import 'package:better_player/src/video_player/video_player.dart';
 import 'package:better_player/src/video_player/video_player_platform_interface.dart';
 import 'package:collection/collection.dart' show IterableExtension;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
 ///Class used to control overall Better Player behavior. Main class to change
@@ -651,20 +652,31 @@ class BetterPlayerController {
     if (videoPlayerController?.value.duration == null) {
       throw StateError("The video has not been initialized yet.");
     }
-
-    await videoPlayerController!.seekTo(moment);
-
-    _postEvent(BetterPlayerEvent(BetterPlayerEventType.seekTo,
-        parameters: <String, dynamic>{_durationParameter: moment}));
-
-    final Duration? currentDuration = videoPlayerController!.value.duration;
-    if (currentDuration == null) {
-      return;
-    }
-    if (moment > currentDuration) {
-      _postEvent(BetterPlayerEvent(BetterPlayerEventType.finished));
-    } else {
-      cancelNextVideoTimer();
+    try {
+      await videoPlayerController!.seekTo(moment);
+      _postEvent(BetterPlayerEvent(BetterPlayerEventType.seekTo,
+          parameters: <String, dynamic>{_durationParameter: moment}));
+      final Duration? currentDuration = videoPlayerController!.value.duration;
+      if (currentDuration == null) {
+        return;
+      }
+      if (moment > currentDuration) {
+        _postEvent(BetterPlayerEvent(BetterPlayerEventType.finished));
+      } else {
+        cancelNextVideoTimer();
+      }
+    }on PlatformException catch(e) {
+      final VideoPlayerValue currentVideoPlayerValue =
+          videoPlayerController?.value ??
+              VideoPlayerValue(duration: const Duration());
+      _videoPlayerValueOnError ??= currentVideoPlayerValue.copyWith(errorDescription: e.message?.toString() ?? e.code);
+      await videoPlayerController?.pause();
+      videoPlayerController?.value= _videoPlayerValueOnError!;
+      _postEvent(BetterPlayerEvent(BetterPlayerEventType.exception,
+        parameters: <String, dynamic>{
+        "exception": e.message?.toString() ?? e.code,
+        },
+      ));
     }
   }
 

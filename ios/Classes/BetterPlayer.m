@@ -334,13 +334,15 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
         [self play];
     } else {
         _stalledCount++;
-        if (_stalledCount > 60){
+        NSLog(@"stalled count: %d", _stalledCount);
+        if (_stalledCount > 4){
             if (_eventSink != nil) {
                 _eventSink([FlutterError
-                        errorWithCode:@"VideoError"
-                        message:@"Failed to load video: playback stalled"
-                        details:nil]);
+                                   errorWithCode:@"VideoError"
+                                         message:@"Failed to load video: playback stalled"
+                                         details:nil]);
             }
+            _stalledCount = 0;
             return;
         }
         [self performSelector:@selector(startStalledCheck) withObject:nil afterDelay:1];
@@ -367,7 +369,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
                       ofObject:(id)object
                         change:(NSDictionary*)change
                        context:(void*)context {
-
     if ([path isEqualToString:@"rate"]) {
         if (@available(iOS 10.0, *)) {
             if (_pipController.pictureInPictureActive == true){
@@ -437,6 +438,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
                                          stringByAppendingString:[item.error localizedDescription]]
                                 details:nil]);
                 }
+//                [_player replaceCurrentItemWithPlayerItem:item];
                 break;
             case AVPlayerItemStatusUnknown:
                 break;
@@ -573,15 +575,15 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     if (wasPlaying){
         [_player pause];
     }
-
+    
     [_player seekToTime:CMTimeMake(location, 1000)
         toleranceBefore:kCMTimeZero
          toleranceAfter:kCMTimeZero
       completionHandler:^(BOOL finished){
-        if (wasPlaying){
-            _player.rate = _playerRate;
-        }
-    }];
+          if (wasPlaying){
+              _player.rate = _playerRate;
+          }
+      }];
 }
 
 - (void)setIsLooping:(bool)isLooping {

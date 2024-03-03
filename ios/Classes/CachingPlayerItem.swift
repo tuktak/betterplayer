@@ -66,9 +66,12 @@ open class CachingPlayerItem: AVPlayerItem {
         func startDataRequest(url: URL) {
             let configuration = URLSessionConfiguration.default
             configuration.requestCachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+            configuration.waitsForConnectivity = false
+
             session = URLSession(configuration: configuration, delegate: self, delegateQueue: nil)
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
+            request.timeoutInterval = 5.0
             let headersString = self.headers as? [String:AnyObject]
             if let unwrappedDict = headersString {
                 for (headerKey,headerValue) in  unwrappedDict{
@@ -114,7 +117,6 @@ open class CachingPlayerItem: AVPlayerItem {
         // MARK: -
         
         func processPendingRequests() {
-            
             // get all fullfilled requests
             let requestsFulfilled = Set<AVAssetResourceLoadingRequest>(pendingRequests.compactMap {
                 self.fillInContentInformationRequest($0.contentInformationRequest)

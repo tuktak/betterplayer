@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import 'dart:async';
+import 'dart:io';
 import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
 import 'package:better_player/src/core/better_player_utils.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -13,6 +15,8 @@ const MethodChannel _channel = MethodChannel('better_player_channel');
 
 /// An implementation of [VideoPlayerPlatform] that uses method channels.
 class MethodChannelVideoPlayer extends VideoPlayerPlatform {
+
+  DurationRange? _range;
   @override
   Future<void> init() {
     return _channel.invokeMethod<void>('init');
@@ -189,12 +193,25 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<void> seekTo(int? textureId, Duration? position) {
-    return _channel.invokeMethod<void>(
+  Future<void> seekTo(int? textureId, Duration? position) async {
+    Duration? _position = position;
+    if(Platform.isIOS) {
+      var connectivityResult = await Connectivity().checkConnectivity();
+      if (connectivityResult == ConnectivityResult.none) {
+        if (_position != null && _range != null) {
+          if (_position < _range!.start) {
+            throw PlatformException(code: "out of range", message: "network error");
+          } else if (_position > _range!.end) {
+            throw PlatformException(code: "out of range", message: "network error");
+          }
+        }
+      }
+    }
+    return await _channel.invokeMethod<void>(
       'seekTo',
       <String, dynamic>{
         'textureId': textureId,
-        'location': position!.inMilliseconds,
+        'location': _position!.inMilliseconds,
       },
     );
   }
@@ -361,11 +378,12 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
           );
         case 'bufferingUpdate':
           final List<dynamic> values = map['values'] as List;
-
+          var list =values.map<DurationRange>(_toDurationRange).toList();
+          _range = list.firstOrNull;
           return VideoEvent(
             eventType: VideoEventType.bufferingUpdate,
             key: key,
-            buffered: values.map<DurationRange>(_toDurationRange).toList(),
+            buffered: list,
           );
         case 'bufferingStart':
           return VideoEvent(
