@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:better_player/better_player.dart';
 import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
 import 'package:better_player/src/video_player/video_player_platform_interface.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -629,7 +630,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _videoPlayerPlatform.setMixWithOthers(_textureId, mixWithOthers);
   }
   Future<void> toggleFullscreen(bool fullscreenMode) {
-    return _videoPlayerPlatform.toggleFullscreen(_textureId, fullscreenMode);
+    if(kIsWeb) {
+      return _videoPlayerPlatform.toggleFullscreen(_textureId, fullscreenMode);
+    }
+    return Future.value();
   }
 
   static Future clearCache() async {
