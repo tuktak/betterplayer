@@ -5,6 +5,7 @@
 // Dart imports:
 import 'dart:async';
 import 'dart:io';
+import 'package:better_player/better_player.dart';
 import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
 import 'package:better_player/src/video_player/video_player_platform_interface.dart';
 import 'package:flutter/material.dart';
@@ -254,9 +255,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           break;
         case VideoEventType.unknown:
           break;
+        default:
+          break;
       }
     }
-
     void errorListener(Object object) {
       if (object is PlatformException) {
         final PlatformException e = object;
@@ -331,6 +333,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     Duration? overriddenDuration,
     String? licenseUrl,
     String? certificateUrl,
+    BetterPlayerDrmType? drmType,
     Map<String, String>? drmHeaders,
     String? activityName,
     String? clearKey,
@@ -354,6 +357,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         overriddenDuration: overriddenDuration,
         licenseUrl: licenseUrl,
         certificateUrl: certificateUrl,
+        drmType: drmType,
         drmHeaders: drmHeaders,
         activityName: activityName,
         clearKey: clearKey,
@@ -623,6 +627,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   void setMixWithOthers(bool mixWithOthers) {
     _videoPlayerPlatform.setMixWithOthers(_textureId, mixWithOthers);
+  }
+  Future<void> toggleFullscreen(bool fullscreenMode) {
+    return _videoPlayerPlatform.toggleFullscreen(_textureId, fullscreenMode);
   }
 
   static Future clearCache() async {

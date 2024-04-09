@@ -6,6 +6,7 @@
 import 'dart:async';
 
 // Flutter imports:
+import 'package:better_player/better_player.dart';
 import 'package:better_player/src/configuration/better_player_buffering_configuration.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
@@ -172,6 +173,9 @@ abstract class VideoPlayerPlatform {
     throw UnimplementedError('buildView() has not been implemented.');
   }
 
+  Future<void> toggleFullscreen(int? textureId, bool fullscreenMode) {
+    throw UnimplementedError('toggleFullscreen() has not been implemented.');
+  }
   // This method makes sure that VideoPlayer isn't implemented with `implements`.
   //
   // See class docs for more details on why implementing this class is forbidden.
@@ -223,6 +227,7 @@ class DataSource {
     this.overriddenDuration,
     this.licenseUrl,
     this.certificateUrl,
+    this.drmType,
     this.drmHeaders,
     this.activityName,
     this.clearKey,
@@ -296,6 +301,8 @@ class DataSource {
   final String? licenseUrl;
 
   final String? certificateUrl;
+
+  final BetterPlayerDrmType? drmType;
 
   final Map<String, String>? drmHeaders;
 
@@ -461,6 +468,10 @@ enum VideoEventType {
 
   /// Picture in picture mode has been dismissed
   pipStop,
+
+  enterFullscreen,
+
+  exitFullscreen,
 
   /// An unknown event has been received.
   unknown,

@@ -22,6 +22,10 @@ dependencies:
   path_provider: ^2.0.10
   collection: ^1.16.0
   xml: ^6.1.0
+  better_player_web:
+    git: https://github.com/tuktak/better_player_web.git
+#    path: ../better_player_web
+  universal_io: ^2.2.2
   connectivity: ^3.0.6
 
 dev_dependencies:
@@ -31,6 +35,10 @@ dev_dependencies:
   flutter_localizations:
     sdk: flutter
 
+# dependency_overrides:
+#   better_player_web:
+#     path: ../better_player_web
+
 flutter:
   plugin:
     platforms:
@@ -39,3 +47,5 @@ flutter:
         pluginClass: BetterPlayerPlugin
       ios:
         pluginClass: BetterPlayerPlugin
+      web:
+        default_package: better_player_web

@@ -8,6 +8,7 @@ import 'package:better_player/src/subtitles/better_player_subtitles_factory.dart
 import 'package:better_player/src/video_player/video_player.dart';
 import 'package:better_player/src/video_player/video_player_platform_interface.dart';
 import 'package:collection/collection.dart' show IterableExtension;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -466,6 +467,7 @@ class BetterPlayerController {
           licenseUrl: _betterPlayerDataSource?.drmConfiguration?.licenseUrl,
           certificateUrl:
               _betterPlayerDataSource?.drmConfiguration?.certificateUrl,
+          drmType: _betterPlayerDataSource?.drmConfiguration?.drmType,
           drmHeaders: _betterPlayerDataSource?.drmConfiguration?.headers,
           activityName:
               _betterPlayerDataSource?.notificationConfiguration?.activityName,
@@ -590,12 +592,14 @@ class BetterPlayerController {
   ///Enables full screen mode in player. This will trigger route change.
   void enterFullScreen() {
     _isFullScreen = true;
+    videoPlayerController?.toggleFullscreen(_isFullScreen);
     _postControllerEvent(BetterPlayerControllerEvent.openFullscreen);
   }
 
   ///Disables full screen mode in player. This will trigger route change.
   void exitFullScreen() {
     _isFullScreen = false;
+    videoPlayerController?.toggleFullscreen(_isFullScreen);
     _postControllerEvent(BetterPlayerControllerEvent.hideFullscreen);
   }
 
@@ -603,8 +607,10 @@ class BetterPlayerController {
   void toggleFullScreen() {
     _isFullScreen = !_isFullScreen;
     if (_isFullScreen) {
+      videoPlayerController?.toggleFullscreen(_isFullScreen);
       _postControllerEvent(BetterPlayerControllerEvent.openFullscreen);
     } else {
+      videoPlayerController?.toggleFullscreen(_isFullScreen);
       _postControllerEvent(BetterPlayerControllerEvent.hideFullscreen);
     }
   }
@@ -1176,6 +1182,14 @@ class BetterPlayerController {
       case VideoEventType.bufferingEnd:
         _postEvent(BetterPlayerEvent(BetterPlayerEventType.bufferingEnd));
         break;
+      case VideoEventType.enterFullscreen:
+        _isFullScreen =true;
+        _postControllerEvent(BetterPlayerControllerEvent.hideFullscreen);
+        break;
+      case VideoEventType.exitFullscreen:
+        _isFullScreen =false;
+        _postControllerEvent(BetterPlayerControllerEvent.openFullscreen);
+        break;
       default:
 
         ///TODO: Handle when needed
@@ -1258,6 +1272,7 @@ class BetterPlayerController {
       sourceType: DataSourceType.network,
       uri: betterPlayerDataSource.url,
       useCache: true,
+      drmType: betterPlayerDataSource.drmConfiguration?.drmType,
       headers: betterPlayerDataSource.headers,
       maxCacheSize: cacheConfig.maxCacheSize,
       maxCacheFileSize: cacheConfig.maxCacheFileSize,
