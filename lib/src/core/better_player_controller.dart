@@ -608,10 +608,14 @@ class BetterPlayerController {
     _isFullScreen = !_isFullScreen;
     if (_isFullScreen) {
       videoPlayerController?.toggleFullscreen(_isFullScreen);
-      _postControllerEvent(BetterPlayerControllerEvent.openFullscreen);
+      if(!kIsWeb) {
+        _postControllerEvent(BetterPlayerControllerEvent.openFullscreen);
+      }
     } else {
       videoPlayerController?.toggleFullscreen(_isFullScreen);
-      _postControllerEvent(BetterPlayerControllerEvent.hideFullscreen);
+      if(!kIsWeb) {
+        _postControllerEvent(BetterPlayerControllerEvent.hideFullscreen);
+      }
     }
   }
 
@@ -1184,11 +1188,11 @@ class BetterPlayerController {
         break;
       case VideoEventType.enterFullscreen:
         _isFullScreen =true;
-        _postControllerEvent(BetterPlayerControllerEvent.hideFullscreen);
+        _postControllerEvent(BetterPlayerControllerEvent.openFullscreen);
         break;
       case VideoEventType.exitFullscreen:
         _isFullScreen =false;
-        _postControllerEvent(BetterPlayerControllerEvent.openFullscreen);
+        _postControllerEvent(BetterPlayerControllerEvent.hideFullscreen);
         break;
       default:
 

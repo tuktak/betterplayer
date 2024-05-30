@@ -24,7 +24,7 @@ dependencies:
   xml: ^6.1.0
   better_player_web:
     git: https://github.com/tuktak/better_player_web.git
-#    path: ../better_player_web
+    ref: 6041b85cc57435775dd779529a1a71c079d5095d
   universal_io: ^2.2.2
   connectivity: ^3.0.6
 
