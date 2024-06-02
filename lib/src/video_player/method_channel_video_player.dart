@@ -407,7 +407,10 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
             eventType: VideoEventType.pause,
             key: key,
           );
-
+        case 'played':
+          return VideoEvent(eventType: VideoEventType.unknown, key: key);
+        case 'paused':
+          return VideoEvent(eventType: VideoEventType.unknown, key: key);
         case 'seek':
           return VideoEvent(
             eventType: VideoEventType.seek,

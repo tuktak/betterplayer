@@ -472,7 +472,11 @@ enum VideoEventType {
   enterFullscreen,
 
   exitFullscreen,
-
+  //VideoPlay 상태 변경
+  played,
+  paused,
+  playing,
+  seeked,
   /// An unknown event has been received.
   unknown,
 }

@@ -644,11 +644,7 @@ class _BetterPlayerMaterialControlsState
   }
 
   void _onPlayPause() {
-    bool isFinished = false;
-
-    if (_latestValue?.position != null && _latestValue?.duration != null) {
-      isFinished = _latestValue!.position >= _latestValue!.duration!;
-    }
+    bool isFinished = isVideoFinished(_latestValue);
 
     if (_controller!.value.isPlaying) {
       changePlayerControlsNotVisible(false);

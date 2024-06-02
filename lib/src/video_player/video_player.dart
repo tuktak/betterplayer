@@ -238,7 +238,21 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
             value = value.copyWith(isBuffering: false);
           }
           break;
-
+        case VideoEventType.played:
+          _seekPosition = null;
+          value = value.copyWith(isPlaying:true, position: event.position);
+          _applyPlayed();
+          break;
+        case VideoEventType.paused:
+          value = value.copyWith(isPlaying:false);
+          break;
+        case VideoEventType.playing:
+          value = value.copyWith(isPlaying: true, position: event.position);
+          break;
+        case VideoEventType.seeked:
+          _seekPosition = null;
+          value = value.copyWith(position: event.position);
+          break;
         case VideoEventType.play:
           play();
           break;
@@ -459,6 +473,41 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
     await _videoPlayerPlatform.setLooping(_textureId, value.isLooping);
   }
+  Future<void> _applyPlayed() async {
+    if (!_created || _isDisposed) {
+      return;
+    }
+    _timer?.cancel();
+    if (value.isPlaying) {
+
+      // await _videoPlayerPlatform.play(_textureId);
+      _timer = Timer.periodic(
+        const Duration(milliseconds: 300),
+            (Timer timer) async {
+          if (_isDisposed) {
+            return;
+          }
+          final Duration? newPosition = await position;
+          final DateTime? newAbsolutePosition = await absolutePosition;
+          // ignore: invariant_booleans
+          if (_isDisposed) {
+            return;
+          }
+          _updatePosition(newPosition, absolutePosition: newAbsolutePosition);
+          if (_seekPosition != null && newPosition != null) {
+            final difference =
+                newPosition.inMilliseconds - _seekPosition!.inMilliseconds;
+            if (difference > 0) {
+              _seekPosition = null;
+            }
+          }
+        },
+      );
+    }
+    // else {
+    //   await _videoPlayerPlatform.pause(_textureId);
+    // }
+  }
 
   Future<void> _applyPlayPause() async {
     if (!_created || _isDisposed) {
@@ -554,10 +603,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _videoPlayerPlatform.seekTo(_textureId, positionToSeek);
     _updatePosition(position);
 
-    if (isPlaying) {
-      play();
-    } else {
-      pause();
+    if(!kIsWeb) {
+      if (isPlaying) {
+        play();
+      } else {
+        pause();
+      }
     }
   }
 

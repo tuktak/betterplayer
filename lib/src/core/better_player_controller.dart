@@ -579,6 +579,11 @@ class BetterPlayerController {
     if (startAt != null) {
       seekTo(startAt);
     }
+    if(_progressTimer == null) {
+      _progressTimer= Timer.periodic(Duration(milliseconds: 500), (Timer timer) {
+        sendProgress();
+      });
+    }
   }
 
   ///Method which is invoked when full screen changes.
@@ -654,6 +659,7 @@ class BetterPlayerController {
     _postEvent(BetterPlayerEvent(BetterPlayerEventType.pause));
   }
 
+  bool _beforeSeekTo = false;
   ///Move player to specific position/moment of the video.
   Future<void> seekTo(Duration moment) async {
     if (videoPlayerController == null) {
@@ -661,6 +667,9 @@ class BetterPlayerController {
     }
     if (videoPlayerController?.value.duration == null) {
       throw StateError("The video has not been initialized yet.");
+    }
+    if(!_beforeSeekTo) {
+      _beforeSeekTo = true;
     }
     try {
       await videoPlayerController!.seekTo(moment);
@@ -670,7 +679,7 @@ class BetterPlayerController {
       if (currentDuration == null) {
         return;
       }
-      if (moment > currentDuration) {
+      if (moment >= currentDuration) {
         _postEvent(BetterPlayerEvent(BetterPlayerEventType.finished));
       } else {
         cancelNextVideoTimer();
@@ -687,6 +696,8 @@ class BetterPlayerController {
         "exception": e.message?.toString() ?? e.code,
         },
       ));
+    }finally {
+      _beforeSeekTo = false;
     }
   }
 
@@ -818,22 +829,23 @@ class BetterPlayerController {
     if (_betterPlayerSubtitlesSource?.asmsIsSegmented == true) {
       _loadAsmsSubtitlesSegments(currentVideoPlayerValue.position);
     }
-
-    final int now = DateTime.now().millisecondsSinceEpoch;
-    if (now - _lastPositionSelection > 500) {
-      _lastPositionSelection = now;
-      _postEvent(
-        BetterPlayerEvent(
-          BetterPlayerEventType.progress,
-          parameters: <String, dynamic>{
-            _progressParameter: currentVideoPlayerValue.position,
-            _durationParameter: currentVideoPlayerValue.duration
-          },
-        ),
-      );
-    }
+  }
+  void sendProgress() {
+    final VideoPlayerValue currentVideoPlayerValue =
+        videoPlayerController?.value ??
+            VideoPlayerValue(duration: const Duration());
+    _postEvent(
+      BetterPlayerEvent(
+        BetterPlayerEventType.progress,
+        parameters: <String, dynamic>{
+          _progressParameter: currentVideoPlayerValue.position,
+          _durationParameter: currentVideoPlayerValue.duration
+        },
+      ),
+    );
   }
 
+  Timer? _progressTimer;
   ///Add event listener which listens to player events.
   void addEventsListener(Function(BetterPlayerEvent) eventListener) {
     _eventListeners.add(eventListener);
@@ -1186,6 +1198,15 @@ class BetterPlayerController {
       case VideoEventType.bufferingEnd:
         _postEvent(BetterPlayerEvent(BetterPlayerEventType.bufferingEnd));
         break;
+      case VideoEventType.played:
+        _postEvent(BetterPlayerEvent(BetterPlayerEventType.play));
+        break;
+      case VideoEventType.paused:
+        _postEvent(BetterPlayerEvent(BetterPlayerEventType.pause));
+        break;
+      case VideoEventType.playing:
+        _postEvent(BetterPlayerEvent(BetterPlayerEventType.play));
+        break;
       case VideoEventType.enterFullscreen:
         _isFullScreen =true;
         _postControllerEvent(BetterPlayerControllerEvent.openFullscreen);
@@ -1323,6 +1344,7 @@ class BetterPlayerController {
         videoPlayerController!.removeListener(_onVideoPlayerChanged);
         videoPlayerController!.dispose();
       }
+      _progressTimer?.cancel();
       _eventListeners.clear();
       _nextVideoTimer?.cancel();
       _nextVideoTimeStreamController.close();

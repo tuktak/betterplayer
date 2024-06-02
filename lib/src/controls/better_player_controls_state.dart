@@ -25,25 +25,26 @@ abstract class BetterPlayerControlsState<T extends StatefulWidget>
   void cancelAndRestartTimer();
   Duration before = Duration(milliseconds: 0);
   bool isVideoFinished(VideoPlayerValue? videoPlayerValue) {
+    var position = videoPlayerValue?.position;
+    var duration = videoPlayerValue?.duration;
     if(kIsWeb) {
-      if(videoPlayerValue?.position ==null) {
+      if(position == null) {
         return false;
       }
-      if(videoPlayerValue?.position != null && videoPlayerValue!.position != before) {
+      if(position != before) {
         before = videoPlayerValue!.position;
         return false;
       }
-      // print("${videoPlayerValue?.position} >= ${videoPlayerValue?.duration}");
-      return videoPlayerValue?.duration != null &&
-          videoPlayerValue!.position.inMilliseconds != 0 &&
-          videoPlayerValue.duration!.inMilliseconds != 0 &&
-          videoPlayerValue.position + Duration(milliseconds: 500) >= videoPlayerValue.duration!;
+      return duration != null &&
+          position.inMilliseconds != 0 &&
+          duration.inMilliseconds != 0 &&
+          position + Duration(milliseconds: 500) >= duration;
     } else { // TODO: 추후 검증 일단 웹인 경우만 처리함.
-      return videoPlayerValue?.position != null &&
-          videoPlayerValue?.duration != null &&
-          videoPlayerValue!.position.inMilliseconds != 0 &&
-          videoPlayerValue.duration!.inMilliseconds != 0 &&
-          videoPlayerValue.position >= videoPlayerValue.duration!;
+      return position != null &&
+          duration != null &&
+          position.inMilliseconds != 0 &&
+          duration.inMilliseconds != 0 &&
+          position >= duration;
     }
   }
 
