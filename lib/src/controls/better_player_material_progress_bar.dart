@@ -102,7 +102,10 @@ class _VideoProgressBarState
         }
 
         if (_controllerWasPlaying) {
-          betterPlayerController?.play();
+          var value = betterPlayerController?.videoPlayerController?.value;
+          if(value != null && value.duration != null  && value.position < value.duration!) {
+            betterPlayerController?.play();
+          }
           if(!kIsWeb) {
             shouldPlayAfterDragEnd = true;
           }
