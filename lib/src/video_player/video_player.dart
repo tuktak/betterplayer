@@ -251,7 +251,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           break;
         case VideoEventType.seeked:
           _seekPosition = null;
-          value = value.copyWith(position: event.position);
+          value = value.copyWith(position: event.position, duration: event.duration);
           break;
         case VideoEventType.play:
           play();
