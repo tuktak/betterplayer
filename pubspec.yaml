@@ -25,7 +25,8 @@ dependencies:
   better_player_web:
     git:
       url: https://github.com/tuktak/better_player_web.git
-      ref: 6041b85cc57435775dd779529a1a71c079d5095d
+#      ref: 6041b85cc57435775dd779529a1a71c079d5095d
+#    path: ../better_player_web
   universal_io: ^2.2.2
   connectivity: ^3.0.6
 
